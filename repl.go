@@ -5,17 +5,19 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/jj-attaq/pokedex/internal"
 )
 
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(c *internal.Config) error
 }
 
 var commands = make(map[string]cliCommand)
 
-func registerCommand(name, desc string, cb func() error) {
+func registerCommand(name, desc string, cb func(c *internal.Config) error) {
 	commands[name] = cliCommand{
 		name:        name,
 		description: desc,
@@ -26,10 +28,13 @@ func registerCommand(name, desc string, cb func() error) {
 func init() {
 	registerCommand("exit", "Exit the Pokedex", commandExit)
 	registerCommand("help", "Displays a help message", commandHelp)
+	registerCommand("map", "lists the next 20 locations", commandMap)
+	registerCommand("mapb", "lists the previous 20 locations", commandMapBack)
 }
 
 func StartRepl() {
 	scanner := bufio.NewScanner(os.Stdin)
+	config := internal.Config{}
 	for {
 		fmt.Printf("Pokedex > ")
 		scanner.Scan()
@@ -41,7 +46,7 @@ func StartRepl() {
 		commandName := words[0]
 		cmd, exists := commands[commandName]
 		if exists {
-			err := cmd.callback()
+			err := cmd.callback(&config)
 			if err != nil {
 				fmt.Println(err)
 			}

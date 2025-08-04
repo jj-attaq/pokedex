@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+
+	"github.com/jj-attaq/pokedex/internal"
 )
 
-func commandHelp() error {
+func commandHelp(c *internal.Config) error {
 	fmt.Printf("Welcome to the Pokedex!\nUsage:\n\n")
 	for _, val := range commands {
 		fmt.Printf("%s: %s\n", val.name, val.description)
