@@ -3,21 +3,55 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"strings"
 
-	"github.com/jj-attaq/pokedex/internal"
+	"github.com/jj-attaq/pokedex/internal/pokeapi"
+	"github.com/jj-attaq/pokedex/internal/pokecache"
 )
+
+type config struct {
+	pokeapiClient    pokeapi.Client
+	nextLocationsURL *string
+	prevLocationsURL *string
+	cache            *pokecache.Cache
+}
+
+func (c *config) fetchWithCache(url string) ([]byte, error) {
+	// Check cache
+	if cachedData, found := c.cache.Get(url); found {
+		return cachedData, nil
+	}
+
+	// Cache miss, make request
+	res, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	// Store in cache
+	c.cache.Add(url, body)
+
+	return body, nil
+}
 
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(c *internal.Config) error
+	callback    func(c *config) error
 }
 
 var commands = make(map[string]cliCommand)
 
-func registerCommand(name, desc string, cb func(c *internal.Config) error) {
+func registerCommand(name, desc string, cb func(c *config) error) {
 	commands[name] = cliCommand{
 		name:        name,
 		description: desc,
@@ -32,9 +66,9 @@ func init() {
 	registerCommand("mapb", "lists the previous 20 locations", commandMapBack)
 }
 
-func StartRepl() {
+func StartRepl(cfg *config) {
 	scanner := bufio.NewScanner(os.Stdin)
-	config := internal.Config{}
+	config := config{}
 	for {
 		fmt.Printf("Pokedex > ")
 		scanner.Scan()

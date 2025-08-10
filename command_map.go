@@ -7,20 +7,12 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/jj-attaq/pokedex/internal"
+	"github.com/jj-attaq/pokedex/internal/pokeapi"
 )
 
-type Locations struct {
-	Count    int    `json:"count"`
-	Next     string `json:"next"`
-	Previous string `json:"previous"`
-	Results  []struct {
-		Name string `json:"name"`
-		URL  string `json:"url"`
-	} `json:"results"`
-}
-
-func determineUrlPosition(c *internal.Config, res *http.Response) (*internal.Config, error) {
+// does the same as ListLocations function in the solution here https://www.boot.dev/solution/813eafe1-2e1d-42a0-b358-53e0f4d4fdc8
+// ListLocations has better separation of concerns, while mine is more grugbrained
+func determineUrlPosition(c *config, res *http.Response) (*config, error) {
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, fmt.Errorf("reading response body failed: %w", err)
@@ -30,7 +22,7 @@ func determineUrlPosition(c *internal.Config, res *http.Response) (*internal.Con
 		log.Fatalf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
 	}
 
-	areas := Locations{}
+	areas := pokeapi.RespShallowLocations{}
 	err = json.Unmarshal(body, &areas)
 	if err != nil {
 		return nil, fmt.Errorf("JSON unmarshal failed: %w", err)
@@ -39,23 +31,24 @@ func determineUrlPosition(c *internal.Config, res *http.Response) (*internal.Con
 	for _, area := range areas.Results {
 		fmt.Println(area.Name)
 	}
-	c.Next = areas.Next
-	c.Previous = areas.Previous
+	c.nextLocationsURL = areas.Next
+	c.prevLocationsURL = areas.Previous
 
 	return c, nil
 }
 
-func commandMap(c *internal.Config) error {
-	url := c.Next
-	if url == "" {
-		url = "https://pokeapi.co/api/v2/location-area/"
+func commandMap(c *config) error {
+	var urlStr string
+	if c.nextLocationsURL == nil {
+		urlStr = "https://pokeapi.co/api/v2/location-area/"
+	} else {
+		urlStr = *c.nextLocationsURL
 	}
 
-	res, err := http.Get(url)
+	res, err := c.fetchWithCache(urlStr)
 	if err != nil {
 		return fmt.Errorf("HTTP request failed: %w", err)
 	}
-	defer res.Body.Close()
 
 	updatedConf, err := determineUrlPosition(c, res)
 	if err != nil {
@@ -67,13 +60,15 @@ func commandMap(c *internal.Config) error {
 	return nil
 }
 
-func commandMapBack(c *internal.Config) error {
-	url := c.Previous
-	if url == "" {
+func commandMapBack(c *config) error {
+	var urlStr string
+	if c.prevLocationsURL == nil {
 		return fmt.Errorf("Cannot go back further.")
+	} else {
+		urlStr = *c.prevLocationsURL
 	}
 
-	res, err := http.Get(url)
+	res, err := c.fetchWithCache(urlStr)
 	if err != nil {
 		return fmt.Errorf("HTTP request failed: %w", err)
 	}
