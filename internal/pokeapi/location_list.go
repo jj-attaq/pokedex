@@ -12,7 +12,16 @@ func (c *Client) ListLocations(pageURL *string) (RespShallowLocations, error) {
 		url = *pageURL
 	}
 
-	//get
+	if cachedData, found := c.cache.Get(url); found {
+		locationsResp := RespShallowLocations{}
+		err := json.Unmarshal(cachedData, &locationsResp)
+		if err != nil {
+			return RespShallowLocations{}, err
+		}
+		return locationsResp, nil
+	}
+
+	// cache miss, make request
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return RespShallowLocations{}, err
@@ -31,36 +40,39 @@ func (c *Client) ListLocations(pageURL *string) (RespShallowLocations, error) {
 		return RespShallowLocations{}, err
 	}
 
+	// Parse and return struct
 	locationsResp := RespShallowLocations{}
 	err = json.Unmarshal(data, &locationsResp)
 	if err != nil {
 		return RespShallowLocations{}, err
 	}
 
+	// Store data into cache
+	c.cache.Add(url, data)
+
 	return locationsResp, nil
 }
 
-// func determineUrlPosition(c *config, res *http.Response) (*config, error) {
+// func (c *config) fetchWithCache(url string) ([]byte, error) {
+// 	// Check cache
+// 	if cachedData, found := c.cache.Get(url); found {
+// 		return cachedData, nil
+// 	}
+//
+// 	// Cache miss, make request
+// 	res, err := http.Get(url)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	defer res.Body.Close()
+//
 // 	body, err := io.ReadAll(res.Body)
 // 	if err != nil {
-// 		return nil, fmt.Errorf("reading response body failed: %w", err)
+// 		return nil, err
 // 	}
 //
-// 	if res.StatusCode > 299 {
-// 		log.Fatalf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
-// 	}
+// 	// Store in cache
+// 	c.cache.Add(url, body)
 //
-// 	areas := pokeapi.RespShallowLocations{}
-// 	err = json.Unmarshal(body, &areas)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("JSON unmarshal failed: %w", err)
-// 	}
-//
-// 	for _, area := range areas.Results {
-// 		fmt.Println(area.Name)
-// 	}
-// 	c.nextLocationsURL = areas.Next
-// 	c.prevLocationsURL = areas.Previous
-//
-// 	return c, nil
+// 	return body, nil
 // }
