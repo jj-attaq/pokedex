@@ -3,8 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"strings"
 
@@ -13,45 +11,21 @@ import (
 )
 
 type config struct {
-	pokeapiClient    pokeapi.Client
+	pokeapiClient    *pokeapi.Client
 	nextLocationsURL *string
 	prevLocationsURL *string
 	cache            *pokecache.Cache
 }
 
-func (c *config) fetchWithCache(url string) ([]byte, error) {
-	// Check cache
-	if cachedData, found := c.cache.Get(url); found {
-		return cachedData, nil
-	}
-
-	// Cache miss, make request
-	res, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	// Store in cache
-	c.cache.Add(url, body)
-
-	return body, nil
-}
-
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(c *config) error
+	callback    func(cfg *config) error
 }
 
 var commands = make(map[string]cliCommand)
 
-func registerCommand(name, desc string, cb func(c *config) error) {
+func registerCommand(name, desc string, cb func(cfg *config) error) {
 	commands[name] = cliCommand{
 		name:        name,
 		description: desc,
@@ -64,11 +38,11 @@ func init() {
 	registerCommand("help", "Displays a help message", commandHelp)
 	registerCommand("map", "lists the next 20 locations", commandMap)
 	registerCommand("mapb", "lists the previous 20 locations", commandMapBack)
+	registerCommand("explore", "lists encounterable pokemon in specified location", commandExplore)
 }
 
 func StartRepl(cfg *config) {
 	scanner := bufio.NewScanner(os.Stdin)
-	config := config{}
 	for {
 		fmt.Printf("Pokedex > ")
 		scanner.Scan()
@@ -80,7 +54,7 @@ func StartRepl(cfg *config) {
 		commandName := words[0]
 		cmd, exists := commands[commandName]
 		if exists {
-			err := cmd.callback(&config)
+			err := cmd.callback(cfg)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -89,20 +63,6 @@ func StartRepl(cfg *config) {
 			fmt.Println("Unknown command")
 			continue
 		}
-
-		// input := CleanInput(scanner.Text())
-		// if len(input) > 1 {
-		// 	fmt.Printf("Unknown command: %s. Commands must be a single word.\n", input)
-		// 	continue
-		// }
-		// inputCmd := input[0]
-		//
-		// cmd := commands[inputCmd]
-		// if inputCmd != cmd.name {
-		// 	fmt.Printf("Unknown command: %s\n", input)
-		// } else {
-		// 	cmd.callback()
-		// }
 	}
 }
 

@@ -52,27 +52,3 @@ func (c *Client) ListLocations(pageURL *string) (RespShallowLocations, error) {
 
 	return locationsResp, nil
 }
-
-// func (c *config) fetchWithCache(url string) ([]byte, error) {
-// 	// Check cache
-// 	if cachedData, found := c.cache.Get(url); found {
-// 		return cachedData, nil
-// 	}
-//
-// 	// Cache miss, make request
-// 	res, err := http.Get(url)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	defer res.Body.Close()
-//
-// 	body, err := io.ReadAll(res.Body)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-//
-// 	// Store in cache
-// 	c.cache.Add(url, body)
-//
-// 	return body, nil
-// }

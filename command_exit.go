@@ -6,7 +6,7 @@ import (
 	// "github.com/jj-attaq/pokedex/internal"
 )
 
-func commandExit(c *config) error {
+func commandExit(cfg *config) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 
