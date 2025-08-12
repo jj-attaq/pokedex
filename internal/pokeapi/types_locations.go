@@ -11,7 +11,7 @@ type RespShallowLocations struct {
 	} `json:"results"`
 }
 
-type RespAreaDetails struct {
+type Location struct {
 	EncounterMethodRates []struct {
 		EncounterMethod struct {
 			Name string `json:"name"`
