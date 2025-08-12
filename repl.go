@@ -20,12 +20,12 @@ type config struct {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(cfg *config) error
+	callback    func(cfg *config, args ...string) error
 }
 
 var commands = make(map[string]cliCommand)
 
-func registerCommand(name, desc string, cb func(cfg *config) error) {
+func registerCommand(name, desc string, cb func(cfg *config, args ...string) error) {
 	commands[name] = cliCommand{
 		name:        name,
 		description: desc,
@@ -52,9 +52,13 @@ func StartRepl(cfg *config) {
 		}
 
 		commandName := words[0]
+		args := []string{}
+		if len(words) > 1 {
+			args = words[1:]
+		}
 		cmd, exists := commands[commandName]
 		if exists {
-			err := cmd.callback(cfg)
+			err := cmd.callback(cfg, args...)
 			if err != nil {
 				fmt.Println(err)
 			}

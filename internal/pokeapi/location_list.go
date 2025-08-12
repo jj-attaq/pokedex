@@ -27,14 +27,14 @@ func (c *Client) ListLocations(pageURL *string) (RespShallowLocations, error) {
 		return RespShallowLocations{}, err
 	}
 
-	//do and close
+	// do and close
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return RespShallowLocations{}, err
 	}
 	defer resp.Body.Close()
 
-	//jsonify response
+	// jsonify response
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return RespShallowLocations{}, err
