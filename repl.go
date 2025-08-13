@@ -39,8 +39,9 @@ func init() {
 	registerCommand("help", "Displays a help message", commandHelp)
 	registerCommand("map", "Lists the next 20 locations", commandMap)
 	registerCommand("mapb", "Lists the previous 20 locations", commandMapBack)
-	registerCommand("explore", "Lists encounterable pokemon in specified location", commandExplore)
-	registerCommand("catch", "Attempt catching a pokemon by throwing a pokeball at it", commandCatch)
+	registerCommand("explore", "Lists encounterable Pokemon in specified location", commandExplore)
+	registerCommand("catch", "Attempt catching a Pokemon by throwing a pokeball at it", commandCatch)
+	registerCommand("inspect", "Provides information on caught Pokemon", commandInspect)
 }
 
 func StartRepl(cfg *config) {
