@@ -11,6 +11,7 @@ func main() {
 	cache := pokecache.NewCache(5 * time.Minute)
 	pokeClient := pokeapi.NewClient(5*time.Minute, cache)
 	cfg := &config{
+		caughtPokemon: map[string]pokeapi.Pokemon{},
 		pokeapiClient: pokeClient,
 	}
 
