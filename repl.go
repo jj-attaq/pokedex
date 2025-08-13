@@ -42,6 +42,7 @@ func init() {
 	registerCommand("explore", "Lists encounterable Pokemon in specified location", commandExplore)
 	registerCommand("catch", "Attempt catching a Pokemon by throwing a pokeball at it", commandCatch)
 	registerCommand("inspect", "Provides information on caught Pokemon", commandInspect)
+	registerCommand("pokedex", "Lists all caught Pokemon", commandPokedex)
 }
 
 func StartRepl(cfg *config) {

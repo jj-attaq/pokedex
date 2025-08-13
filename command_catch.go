@@ -28,7 +28,7 @@ func commandCatch(cfg *config, args ...string) error {
 
 	wasCaught := chance(baseExp)
 	if wasCaught {
-		fmt.Printf("%s was caught!\n", pokemon.Name)
+		fmt.Printf("%s was caught!\nYou may now inspect it with the inspect command.\n", pokemon.Name)
 		cfg.caughtPokemon[pokemon.Name] = pokemon
 	} else {
 		fmt.Printf("%s escaped!\n", pokemon.Name)
