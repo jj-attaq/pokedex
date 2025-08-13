@@ -36,9 +36,10 @@ func registerCommand(name, desc string, cb func(cfg *config, args ...string) err
 func init() {
 	registerCommand("exit", "Exit the Pokedex", commandExit)
 	registerCommand("help", "Displays a help message", commandHelp)
-	registerCommand("map", "lists the next 20 locations", commandMap)
-	registerCommand("mapb", "lists the previous 20 locations", commandMapBack)
-	registerCommand("explore", "lists encounterable pokemon in specified location", commandExplore)
+	registerCommand("map", "Lists the next 20 locations", commandMap)
+	registerCommand("mapb", "Lists the previous 20 locations", commandMapBack)
+	registerCommand("explore", "Lists encounterable pokemon in specified location", commandExplore)
+	registerCommand("catch", "Attempt catching a pokemon by throwing a pokeball at it", commandCatch)
 }
 
 func StartRepl(cfg *config) {
